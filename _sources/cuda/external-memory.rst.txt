@@ -31,7 +31,7 @@ Overview of External Memory Management
 ======================================
 
 When an EMM Plugin is in use (see :ref:`setting-emm-plugin`), Numba will make
-does allocation and deallocation through the Plugin. It will never directly call
+memory allocations and deallocations through the Plugin. It will never directly call
 functions such as ``cuMemAlloc``, ``cuMemFree``, etc.
 
 EMM Plugins always take responsibility for the management of device memory.
@@ -69,9 +69,10 @@ Management of other objects
 ---------------------------
 
 In addition to memory, Numba manages the allocation and deallocation of
-:ref:`events <events>`, :ref:`streams <streams>`, and modules (modules are a
-compiled objects, which is generated for CUDA kernels). The management of
-events, streams, and modules is unchanged by the use of an EMM Plugin.
+:ref:`events <events>`, :ref:`streams <streams>`, and modules (a module is a
+compiled object, which is generated from ``@cuda.jit``\ -ted functions). The
+management of events, streams, and modules is unchanged by the use of an EMM
+Plugin.
 
 
 Asynchronous allocation and deallocation
@@ -114,7 +115,7 @@ implementation follows:
   interface (rather than being handled within Numba) because the base address of
   the allocation is only known by the underlying library. Closing an IPC handle
   is handled internally within Numba.
-- It is optional provide memory info from the ``get_memory_info`` method, which
+- It is optional to provide memory info from the ``get_memory_info`` method, which
   provides a count of the total and free memory on the device for the context.
   It is preferrable to implement the method, but this may not be practical for
   all allocators. If memory info is not provided, this method should raise a
@@ -177,7 +178,7 @@ Memory Pointers
 ---------------
 
 EMM Plugins should construct memory pointer instances that represent their
-allocations, for return to Numba. The appopriate memory pointer class to use in
+allocations, for return to Numba. The appropriate memory pointer class to use in
 each method is:
 
 - :class:`~numba.cuda.MemoryPointer`: returned from ``memalloc``
@@ -229,8 +230,8 @@ of :meth:`~numba.cuda.BaseCUDAMemoryManager.get_ipc_handle`:
 Guidance for constructing an IPC handle in the context of implementing an EMM
 Plugin:
 
-- The ``memory`` parameter to ``get_ipc_handle`` can be passed as the ``base``
-  parameter.
+- The ``memory`` parameter passed to the ``get_ipc_handle`` method of an EMM
+  Plugin can be passed as the ``base`` parameter.
 - A suitable type for the ``handle`` can be constructed as ``ctypes.c_byte *
   64``. The data for ``handle`` must be populated using a method for obtaining a
   CUDA IPC handle appropriate to the underlying library.
